@@ -1,0 +1,36 @@
+{
+  "name": "onthitotnghiep-vite",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@vercel/blob": "^0.22.1",
+    "@vercel/kv": "^1.0.1",
+    "axios": "^1.6.8",
+    "clsx": "^2.1.0",
+    "cookie": "^0.6.0",
+    "jsonwebtoken": "^9.0.2",
+    "lucide-react": "latest",
+    "pdfjs-dist": "^4.0.379",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.22.3",
+    "tailwind-merge": "^2.2.2"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.66",
+    "@types/react-dom": "^18.2.22",
+    "@vitejs/plugin-react-swc": "^3.5.0",
+    "autoprefixer": "^10.4.18",
+    "postcss": "^8.4.35",
+    "postcss-import": "^16.1.1",
+    "tailwindcss": "^3.4.1",
+    "vite": "^5.2.2"
+  }
+}
