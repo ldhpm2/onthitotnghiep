@@ -111,8 +111,12 @@ const StudentHome = () => {
         </div>
       </div>
       <div className="fixed bottom-6 left-0 w-full text-center z-10">
-        <p className="text-slate-400/80 font-bold uppercase tracking-[0.2em] text-[11px]">
-          Thiết kế bởi thầy Nguyễn Duy Chiến
+        <p className="text-slate-400/80 font-bold uppercase tracking-[0.2em] text-[11px] flex items-center justify-center gap-4">
+          <span>Thiết kế bởi thầy Nguyễn Duy Chiến</span>
+          <span className="opacity-20">|</span>
+          <a href="/admin" className="hover:text-blue-500 transition-colors flex items-center gap-1">
+            <Icon name="lock" size={10} /> QUẢN TRỊ
+          </a>
         </p>
       </div>
     </div>

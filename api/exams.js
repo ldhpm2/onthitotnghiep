@@ -16,33 +16,53 @@ export default async function handler(req, res) {
     if (action === 'upload' && req.method === 'POST') {
       const { title, config, category, fileName, fileData, type } = req.body;
       
+      if (!fileData) return res.status(400).json({ error: 'Thiếu dữ liệu file' });
+
       let finalFilePath = "";
-      if (fileData) {
-        // fileData is expected to be a base64 string or similar if coming from JSON
+      try {
+        // fileData is expected to be a base64 string
         const buffer = Buffer.from(fileData, 'base64');
+        
+        if (!process.env.BLOB_READ_WRITE_TOKEN) {
+          throw new Error("Chưa cấu hình BLOB_READ_WRITE_TOKEN trên Vercel");
+        }
+
         const blob = await put(`exams/${Date.now()}_${fileName}`, buffer, {
           access: 'public',
+          token: process.env.BLOB_READ_WRITE_TOKEN
         });
         finalFilePath = blob.url;
+      } catch (blobError) {
+        console.error("Blob Storage Error:", blobError);
+        return res.status(500).json({ error: `Lỗi lưu trữ Blob: ${blobError.message}` });
       }
 
-      const exams = await kv.get('exams_data') || [];
-      const newExam = {
-        id: Date.now().toString(),
-        title: title || fileName.replace(/\.[^/.]+$/, ""),
-        category: category || 'khac',
-        config: typeof config === 'string' ? JSON.parse(config) : config,
-        filePath: finalFilePath,
-        type: type || (fileName.endsWith('.pdf') ? 'pdf' : 'docx'),
-        createdAt: new Date().toLocaleString('vi-VN'),
-        visible: true,
-        correctAnswers: { p1: {}, p2: {}, p3: {} },
-        duration: 90
-      };
-      
-      exams.push(newExam);
-      await kv.set('exams_data', exams);
-      return res.status(200).json({ success: true, exam: newExam });
+      try {
+        if (!process.env.KV_URL) {
+          throw new Error("Chưa cấu hình KV_URL trên Vercel");
+        }
+        
+        const exams = await kv.get('exams_data') || [];
+        const newExam = {
+          id: Date.now().toString(),
+          title: title || fileName.replace(/\.[^/.]+$/, ""),
+          category: category || 'khac',
+          config: typeof config === 'string' ? JSON.parse(config) : config,
+          filePath: finalFilePath,
+          type: type || (fileName.endsWith('.pdf') ? 'pdf' : 'docx'),
+          createdAt: new Date().toLocaleString('vi-VN'),
+          visible: true,
+          correctAnswers: { p1: {}, p2: {}, p3: {} },
+          duration: 90
+        };
+        
+        exams.push(newExam);
+        await kv.set('exams_data', exams);
+        return res.status(200).json({ success: true, exam: newExam });
+      } catch (kvError) {
+        console.error("KV Database Error:", kvError);
+        return res.status(500).json({ error: `Lỗi Database KV: ${kvError.message}` });
+      }
     }
 
     // 3. EDIT EXAM METADATA

@@ -96,7 +96,14 @@ const AdminDashboard = () => {
             alert(r.data.error || "Lỗi tải lên!");
           }
         } catch (err) {
-          alert("Lỗi Server!");
+          const serverError = err.response?.data?.error;
+          if (serverError) {
+             alert(`Lỗi từ hệ thống: ${serverError}`);
+          } else if (file.size > 4 * 1024 * 1024) {
+             alert("Lỗi: File quá lớn! Vercel giới hạn file tải lên dưới 4.5MB. Vui lòng nén file PDF lại.");
+          } else {
+             alert("Lỗi Server! Có thể bạn chưa cấu hình Database trên Vercel Dashboard.");
+          }
         } finally {
           setIsUploading(false);
           e.target.value = "";
