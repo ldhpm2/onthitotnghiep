@@ -15,6 +15,7 @@
     "axios": "^1.6.8",
     "clsx": "^2.1.0",
     "cookie": "^0.6.0",
+    "ioredis": "^5.10.1",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "latest",
     "pdfjs-dist": "^4.0.379",

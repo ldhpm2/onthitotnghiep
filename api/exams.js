@@ -1,4 +1,18 @@
-import { kv } from '@vercel/kv';
+import Redis from 'ioredis';
+
+// Initialize Redis using REDIS_URL or KV_URL
+const redis = new Redis(process.env.REDIS_URL || process.env.KV_URL);
+
+// Helper to simulate @vercel/kv's JSON handling
+const kv = {
+  get: async (key) => {
+    const data = await redis.get(key);
+    return data ? JSON.parse(data) : null;
+  },
+  set: async (key, value) => {
+    return await redis.set(key, JSON.stringify(value));
+  }
+};
 import { put, del } from '@vercel/blob';
 
 export default async function handler(req, res) {
@@ -23,13 +37,14 @@ export default async function handler(req, res) {
         // fileData is expected to be a base64 string
         const buffer = Buffer.from(fileData, 'base64');
         
-        if (!process.env.BLOB_READ_WRITE_TOKEN) {
-          throw new Error("Chưa cấu hình BLOB_READ_WRITE_TOKEN trên Vercel");
+        const blobToken = process.env.BLOB_READ_WRITE_TOKEN;
+        if (!blobToken) {
+          throw new Error("Lỗi xác thực: BLOB_READ_WRITE_TOKEN bị trống hoặc chưa được Vercel nạp vào phiên bản này. Hãy thử 'Redeploy' lại bản mới nhất.");
         }
 
         const blob = await put(`exams/${Date.now()}_${fileName}`, buffer, {
           access: 'public',
-          token: process.env.BLOB_READ_WRITE_TOKEN
+          token: blobToken
         });
         finalFilePath = blob.url;
       } catch (blobError) {
