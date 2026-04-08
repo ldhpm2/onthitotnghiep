@@ -21,6 +21,9 @@ export default async function handler(req, res) {
 
     // 2. GET HISTORY FOR EXAM
     if (action === 'get_history' && examId) {
+      if (!process.env.KV_URL && !process.env.REDIS_URL && !process.env.KV_REST_API_URL) {
+         return res.status(500).json({ error: "Database chưa được cấu hình" });
+      }
       const history = await kv.get('history_data') || [];
       const filtered = history.filter(h => String(h.examId) === String(examId));
       // Newest first

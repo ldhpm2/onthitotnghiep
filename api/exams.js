@@ -38,8 +38,9 @@ export default async function handler(req, res) {
       }
 
       try {
-        if (!process.env.KV_URL) {
-          throw new Error("Chưa cấu hình KV_URL trên Vercel");
+        const kvUrl = process.env.KV_URL || process.env.REDIS_URL;
+        if (!kvUrl && !process.env.KV_REST_API_URL) {
+          throw new Error("Chưa cấu hình KV_URL hoặc REDIS_URL trên Vercel");
         }
         
         const exams = await kv.get('exams_data') || [];
