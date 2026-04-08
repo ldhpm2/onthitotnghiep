@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Testing
+coverage/
+
+# Production Build
+dist/
+dist-ssr/
+build/
+*.local
+
+# Environment Variables
+.env
+.env.local
+.env.production
+.env.test
+
+# Vercel
+.vercel
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
