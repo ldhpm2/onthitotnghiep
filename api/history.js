@@ -1,4 +1,18 @@
-import { kv } from '@vercel/kv';
+import Redis from 'ioredis';
+
+// Initialize Redis using REDIS_URL or KV_URL
+const redis = new Redis(process.env.REDIS_URL || process.env.KV_URL);
+
+// Helper to simulate @vercel/kv's JSON handling
+const kv = {
+  get: async (key) => {
+    const data = await redis.get(key);
+    return data ? JSON.parse(data) : null;
+  },
+  set: async (key, value) => {
+    return await redis.set(key, JSON.stringify(value));
+  }
+};
 
 export default async function handler(req, res) {
   const { action, examId, startTime } = req.query;
@@ -21,9 +35,6 @@ export default async function handler(req, res) {
 
     // 2. GET HISTORY FOR EXAM
     if (action === 'get_history' && examId) {
-      if (!process.env.KV_URL && !process.env.REDIS_URL && !process.env.KV_REST_API_URL) {
-         return res.status(500).json({ error: "Database chưa được cấu hình" });
-      }
       const history = await kv.get('history_data') || [];
       const filtered = history.filter(h => String(h.examId) === String(examId));
       // Newest first
