@@ -18,23 +18,24 @@ const EditExamModal = ({ exam, onSave, onClose }) => {
   const handleSave = async () => {
     if (!title.trim()) return alert("Tên đề thi không được để trống!");
     setIsSaving(true);
-    const fd = new FormData();
-    fd.append('id', exam.id);
-    fd.append('title', title);
-    fd.append('category', category);
-    // if (file) fd.append('file', file);
+    
+    // Using simple JSON payload instead of FormData to match backend's expected format
+    const payload = {
+      id: exam.id,
+      title: title.trim(),
+      category: category
+    };
 
-    // Bypassing file upload edit since this is Mock API mostly, and it's rare to change file.
-    // If needed we can add it back, but let's just edit metadata for now.
     try {
-      const r = await axios.post('/api/exams?action=edit', fd);
+      const r = await axios.post('/api/exams?action=edit', payload);
       if (r.data.success) { 
         onSave(); 
       } else { 
         alert(r.data.error || "Lỗi khi lưu!"); 
       }
     } catch (e) {
-      alert("Lỗi kết nối Server!");
+      console.error("Edit Exam Error:", e);
+      alert(e.response?.data?.error || "Lỗi kết nối Server!");
     } finally {
       setIsSaving(false);
     }
