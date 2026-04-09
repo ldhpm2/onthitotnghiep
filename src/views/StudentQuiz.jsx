@@ -176,18 +176,24 @@ const StudentQuiz = () => {
       </header>
 
       {/* Mobile view toggle */}
-      <div className="md:hidden flex bg-white border-b border-slate-200 shrink-0">
+      <div className="md:hidden flex bg-white border-b-2 border-slate-200 shrink-0">
         <button 
           onClick={() => setMobileActiveView('exam_pdf')}
-          className={`flex-1 py-3 text-[11px] font-bold uppercase tracking-wider transition-all border-b-2 ${mobileActiveView === 'exam_pdf' ? 'border-blue-600 text-blue-600 bg-blue-50/30' : 'border-transparent text-slate-400'}`}
+          className={`flex-1 py-3.5 text-[13px] font-black uppercase tracking-wider transition-all border-b-4 flex items-center justify-center gap-2
+            ${mobileActiveView === 'exam_pdf' 
+              ? 'border-blue-600 text-blue-600 bg-blue-50' 
+              : 'border-transparent text-slate-400 bg-white'}`}
         >
-          Xem đề bài
+          📄 Xem đề bài
         </button>
         <button 
           onClick={() => setMobileActiveView('quiz_sheet')}
-          className={`flex-1 py-3 text-[11px] font-bold uppercase tracking-wider transition-all border-b-2 ${mobileActiveView === 'quiz_sheet' ? 'border-blue-600 text-blue-600 bg-blue-50/30' : 'border-transparent text-slate-400'}`}
+          className={`flex-1 py-3.5 text-[13px] font-black uppercase tracking-wider transition-all border-b-4 flex items-center justify-center gap-2
+            ${mobileActiveView === 'quiz_sheet' 
+              ? 'border-blue-600 text-blue-600 bg-blue-50' 
+              : 'border-transparent text-slate-400 bg-white'}`}
         >
-          Phiếu trả lời
+          ✏️ Phiếu trả lời
         </button>
       </div>
 
