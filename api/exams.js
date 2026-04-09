@@ -122,11 +122,18 @@ export default async function handler(req, res) {
 
     // 4. SAVE ANSWERS & RE-GRADE
     if (action === 'saveAnswers' && req.method === 'POST') {
-      const { examId, answers } = req.body;
+      const { examId, answers, clearExplanation } = req.body;
       let exams = await kv.get('exams_data') || [];
       exams = exams.map(e => {
         if (String(e.id) === String(examId)) {
-          return { ...e, correctAnswers: answers };
+          const updated = { ...e, correctAnswers: answers };
+          if (clearExplanation) {
+            if (e.explanationPath && e.explanationPath.includes('public.blob.vercel-storage.com')) {
+              try { del(e.explanationPath); } catch (err) {}
+            }
+            updated.explanationPath = "";
+          }
+          return updated;
         }
         return e;
       });

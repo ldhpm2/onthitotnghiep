@@ -245,13 +245,17 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      {editingAnsId && <AnswerConfig exam={exams.find(e => String(e.id) === String(editingAnsId))} onSave={async (ans) => {
+      {editingAnsId && <AnswerConfig exam={exams.find(e => String(e.id) === String(editingAnsId))} onSave={async (ans, clearEx) => {
         try {
-          const r = await axios.post('/api/exams?action=saveAnswers', { examId: editingAnsId, answers: ans });
+          const r = await axios.post('/api/exams?action=saveAnswers', { 
+            examId: editingAnsId, 
+            answers: ans,
+            clearExplanation: clearEx 
+          });
           if (r.data.success) { 
             loadData(); 
             setEditingAnsId(null); 
-            alert("Đã lưu đáp án và chấm lại cho " + r.data.updatedCount + " bài thi!"); 
+            alert(clearEx ? "Đã xoá sạch đáp án và lời giải!" : "Đã lưu đáp án và chấm lại cho " + r.data.updatedCount + " bài thi!"); 
           }
         } catch (e) { alert("Lỗi!"); }
       }} onClose={() => setEditingAnsId(null)} />}
