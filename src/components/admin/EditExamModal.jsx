@@ -13,12 +13,14 @@ const EditExamModal = ({ exam, onSave, onClose }) => {
   const [title, setTitle] = useState(exam.title);
   const [category, setCategory] = useState(exam.category || 'khac');
   const [explanationFile, setExplanationFile] = useState(null);
+  const [deleteEx, setDeleteEx] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file && file.type === 'application/pdf') {
       setExplanationFile(file);
+      setDeleteEx(false);
     } else if (file) {
       alert("Vui lòng chọn file PDF!");
       e.target.value = "";
@@ -33,7 +35,8 @@ const EditExamModal = ({ exam, onSave, onClose }) => {
       const payload = {
         id: exam.id,
         title: title.trim(),
-        category: category
+        category: category,
+        deleteExplanation: deleteEx
       };
 
       if (explanationFile) {
@@ -89,9 +92,22 @@ const EditExamModal = ({ exam, onSave, onClose }) => {
                 onChange={handleFileChange} 
                 className="w-full bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-4 font-bold text-slate-500 outline-none focus:border-blue-500 transition-all hover:bg-slate-100 cursor-pointer text-xs" 
               />
-              {exam.explanationPath && !explanationFile && (
-                <p className="mt-2 text-[10px] text-emerald-600 font-bold flex items-center gap-1">
-                  <Icon name="check-circle" size={12} /> Đã có file lời giải trên hệ thống
+              {exam.explanationPath && !explanationFile && !deleteEx && (
+                <div className="mt-2 flex items-center justify-between">
+                  <p className="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
+                    <Icon name="check-circle" size={12} /> Đã có file lời giải trên hệ thống
+                  </p>
+                  <button 
+                    onClick={() => { if(window.confirm("Xoá file lời giải hiện tại?")) setDeleteEx(true); }}
+                    className="text-[10px] font-black text-red-500 hover:text-red-700 uppercase flex items-center gap-1 transition-all"
+                  >
+                    <Icon name="trash-2" size={12} /> Xoá file
+                  </button>
+                </div>
+              )}
+              {deleteEx && (
+                <p className="mt-2 text-[10px] text-red-500 font-bold italic animate-pulse">
+                  * Sẽ xoá file lời giải khi nhấn Lưu
                 </p>
               )}
             </div>

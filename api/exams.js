@@ -84,7 +84,7 @@ export default async function handler(req, res) {
 
     // 3. EDIT EXAM METADATA
     if (action === 'edit' && req.method === 'POST') {
-      const { id, title, category, explanationData, explanationFileName } = req.body;
+      const { id, title, category, explanationData, explanationFileName, deleteExplanation } = req.body;
       let exams = await kv.get('exams_data') || [];
       
       let finalExplanationPath = null;
@@ -105,6 +105,14 @@ export default async function handler(req, res) {
       exams = exams.map(e => {
         if (String(e.id) === String(id)) {
           const updated = { ...e, title: title || e.title, category: category || e.category };
+          
+          if (deleteExplanation) {
+            if (e.explanationPath && e.explanationPath.includes('public.blob.vercel-storage.com')) {
+              try { del(e.explanationPath); } catch (err) {}
+            }
+            updated.explanationPath = "";
+          }
+
           if (finalExplanationPath) {
             // Delete old explanation if exists
             if (e.explanationPath && e.explanationPath.includes('public.blob.vercel-storage.com')) {
