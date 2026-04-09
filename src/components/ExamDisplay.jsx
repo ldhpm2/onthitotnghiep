@@ -14,6 +14,7 @@ const ExamDisplay = ({ type, path }) => {
   const containerRef = useRef(null);
   const touchStartDist = useRef(null);
   const startZoom = useRef(1);
+  const isPinching = useRef(false);
 
   // Load PDF and render pages
   useEffect(() => {
@@ -68,20 +69,24 @@ const ExamDisplay = ({ type, path }) => {
     return () => { isMounted = false; };
   }, [path, type, scale]);
 
-  // Handle Pinch-to-Zoom
+  // Handle Pinch-to-Zoom — only intercepts 2-finger touches; single finger scroll works normally
   const handleTouchStart = (e) => {
     if (e.touches.length === 2) {
+      isPinching.current = true;
       const dist = Math.hypot(
         e.touches[0].pageX - e.touches[1].pageX,
         e.touches[0].pageY - e.touches[1].pageY
       );
       touchStartDist.current = dist;
       startZoom.current = zoom;
+    } else {
+      isPinching.current = false;
     }
   };
 
   const handleTouchMove = (e) => {
     if (e.touches.length === 2 && touchStartDist.current) {
+      e.preventDefault(); // Only prevent default during pinch zoom
       const dist = Math.hypot(
         e.touches[0].pageX - e.touches[1].pageX,
         e.touches[0].pageY - e.touches[1].pageY
@@ -90,10 +95,14 @@ const ExamDisplay = ({ type, path }) => {
       const newZoom = Math.min(Math.max(startZoom.current * ratio, 1), 3);
       setZoom(newZoom);
     }
+    // Single finger: do nothing, let browser handle scroll naturally
   };
 
-  const handleTouchEnd = () => {
-    touchStartDist.current = null;
+  const handleTouchEnd = (e) => {
+    if (e.touches.length < 2) {
+      isPinching.current = false;
+      touchStartDist.current = null;
+    }
   };
 
   const resetZoom = () => setZoom(1);
@@ -118,11 +127,12 @@ const ExamDisplay = ({ type, path }) => {
       </div>
 
       <div 
-        className="exam-view-container flex-1 custom-scrollbar bg-slate-700 overflow-auto touch-none" 
+        className="exam-view-container flex-1 custom-scrollbar bg-slate-700 overflow-auto" 
         ref={containerRef}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
+        style={{ WebkitOverflowScrolling: 'touch' }}
       >
         {loading && (
           <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-slate-800/80 backdrop-blur-sm text-white gap-4">
