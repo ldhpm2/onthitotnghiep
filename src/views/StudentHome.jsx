@@ -38,11 +38,11 @@ const StudentHome = () => {
   }, [exams, activeCategory]);
 
   if (view === 'student_list') return (
-    <div className="max-w-4xl mx-auto p-12 text-center h-screen overflow-y-auto custom-scrollbar">
-      <button onClick={() => setView('landing')} className="text-blue-600 font-bold text-[10px] uppercase tracking-[0.4em] mb-12 mx-auto flex items-center gap-2 hover:bg-white px-6 py-2.5 rounded-xl transition-all shadow-sm">
+    <div className="max-w-4xl mx-auto p-6 sm:p-12 text-center min-h-[100dvh] overflow-y-auto custom-scrollbar safe-p-top safe-p-bottom">
+      <button onClick={() => setView('landing')} className="text-blue-600 font-bold text-[10px] uppercase tracking-[0.4em] mb-8 sm:mb-12 mx-auto flex items-center gap-2 hover:bg-white px-6 py-2.5 rounded-xl transition-all shadow-sm">
         <Icon name="arrow-left" /> Quay lại trang chủ
       </button>
-      <h1 className="text-[24px] font-black text-slate-800 mb-10 tracking-tighter uppercase italic decoration-blue-500 underline decoration-[4px] underline-offset-4 leading-none text-center">DANH SÁCH ĐỀ THI</h1>
+      <h1 className="text-[20px] sm:text-[24px] font-black text-slate-800 mb-8 sm:mb-10 tracking-tighter uppercase italic decoration-blue-500 underline decoration-[4px] underline-offset-4 leading-none text-center px-4">DANH SÁCH ĐỀ THI</h1>
       
       <div className="flex overflow-x-auto hide-scroll gap-3 mb-8 pb-2 shrink-0 px-2 justify-start md:justify-center">
         {Object.keys(CATEGORIES).map((key) => (
@@ -86,12 +86,12 @@ const StudentHome = () => {
   );
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-slate-50 to-blue-50 text-center font-sans relative overflow-hidden">
+    <div className="min-h-[100dvh] flex items-center justify-center p-4 sm:p-6 bg-gradient-to-br from-slate-50 to-blue-50 text-center font-sans relative overflow-hidden safe-p-top safe-p-bottom">
       {/* Decorative background elements */}
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-blue-100 opacity-50 blur-3xl mix-blend-multiply"></div>
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-100 opacity-50 blur-3xl mix-blend-multiply"></div>
       
-      <div className="bg-white/80 backdrop-blur-xl p-12 sm:p-16 rounded-[2rem] shadow-2xl border border-white max-w-2xl w-full text-center relative z-10">
+      <div className="bg-white/80 backdrop-blur-xl p-8 sm:p-16 rounded-[2rem] shadow-2xl border border-white max-w-2xl w-full text-center relative z-10">
         <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-indigo-600"></div>
         <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-xl shadow-blue-200/50 rotate-3 transition-transform hover:rotate-0 text-center hover:scale-105 duration-300">
           <Icon name="graduation-cap" size={40} />
@@ -110,8 +110,8 @@ const StudentHome = () => {
           </button>
         </div>
       </div>
-      <div className="fixed bottom-6 left-0 w-full text-center z-10">
-        <p className="text-slate-400/80 font-bold uppercase tracking-[0.2em] text-[11px] flex items-center justify-center gap-4">
+      <div className="fixed bottom-6 left-0 w-full text-center z-10 px-6 safe-p-bottom">
+        <p className="text-slate-400/80 font-bold uppercase tracking-[0.2em] text-[9px] sm:text-[11px] flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
           <span>Hệ thống Ôn tập Toán 12 - Thầy Hùng</span>
           <span className="opacity-20">|</span>
           <a href="/admin" className="hover:text-blue-500 transition-colors flex items-center gap-1">

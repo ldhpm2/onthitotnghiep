@@ -69,6 +69,7 @@ const StudentQuiz = () => {
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showExplanation, setShowExplanation] = useState(false);
+  const [mobileActiveView, setMobileActiveView] = useState('quiz_sheet'); // 'exam_pdf' or 'quiz_sheet'
 
   useEffect(() => {
     const fetchExam = async () => {
@@ -156,29 +157,46 @@ const StudentQuiz = () => {
   );
 
   if (view === 'quiz') return (
-    <div className="h-screen flex flex-col bg-slate-100 overflow-hidden text-left">
-      <header className="bg-white border-b border-slate-200 p-2 flex justify-between items-center z-20 shadow-sm shrink-0 px-6">
-        <div className="flex items-center gap-4">
-          <button onClick={() => { if(window.confirm("Kết quả bài làm sẽ không được lưu. Bạn chắc chứ?")) navigate('/') }} className="p-2 text-slate-400 hover:text-slate-600 transition-all"><Icon name="arrow-left" size={20} /></button>
-          <div className="max-w-[180px] sm:max-w-md text-left">
-            <h2 className="font-bold text-slate-800 text-[14px] uppercase truncate leading-none">{exam.title}</h2>
-            <div className="flex items-center gap-3 mt-1.5">
-              <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-widest truncate">{studentInfo.name}</p>
-              <span className="text-[10px] px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full font-bold">Đã làm: {stats.done}/{stats.total} câu</span>
-              {tabSwitchCount > 0 && <span className="text-[10px] px-2 py-0.5 bg-red-50 text-red-600 rounded-full font-bold">Chuyển tab: {tabSwitchCount}</span>}
+    <div className="h-[100dvh] flex flex-col bg-slate-100 overflow-hidden text-left safe-p-bottom">
+      <header className="bg-white border-b border-slate-200 p-2 flex justify-between items-center z-20 shadow-sm shrink-0 px-4 md:px-6 safe-p-top">
+        <div className="flex items-center gap-2 md:gap-4">
+          <button onClick={() => { if(window.confirm("Kết quả bài làm sẽ không được lưu. Bạn chắc chứ?")) navigate('/') }} className="p-1 md:p-2 text-slate-400 hover:text-slate-600 transition-all"><Icon name="arrow-left" size={18} /></button>
+          <div className="max-w-[120px] sm:max-w-md text-left">
+            <h2 className="font-bold text-slate-800 text-[12px] md:text-[14px] uppercase truncate leading-none">{exam.title}</h2>
+            <div className="flex items-center gap-2 md:gap-3 mt-1 md:mt-1.5">
+              <p className="hidden sm:block text-[10px] text-slate-400 font-semibold uppercase tracking-widest truncate">{studentInfo.name}</p>
+              <span className="text-[9px] md:text-[10px] px-1.5 md:px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full font-bold whitespace-nowrap">Đã làm: {stats.done}/{stats.total}</span>
             </div>
           </div>
         </div>
-        <Timer initialMinutes={exam.duration} onTimeUp={() => setView('result')} />
-        <button onClick={() => setShowSubmitModal(true)} className="bg-emerald-600 text-white px-6 py-2 rounded-xl font-bold shadow-sm hover:bg-emerald-700 transition-all uppercase tracking-widest text-[10px]">Nộp bài làm</button>
+        <div className="flex items-center gap-2">
+          <Timer initialMinutes={exam.duration} onTimeUp={() => setView('result')} />
+          <button onClick={() => setShowSubmitModal(true)} className="bg-emerald-600 text-white px-3 md:px-6 py-2 rounded-lg md:rounded-xl font-bold shadow-sm hover:bg-emerald-700 transition-all uppercase tracking-widest text-[9px] md:text-[10px]">Nộp bài</button>
+        </div>
       </header>
 
+      {/* Mobile view toggle */}
+      <div className="md:hidden flex bg-white border-b border-slate-200 shrink-0">
+        <button 
+          onClick={() => setMobileActiveView('exam_pdf')}
+          className={`flex-1 py-3 text-[11px] font-bold uppercase tracking-wider transition-all border-b-2 ${mobileActiveView === 'exam_pdf' ? 'border-blue-600 text-blue-600 bg-blue-50/30' : 'border-transparent text-slate-400'}`}
+        >
+          Xem đề bài
+        </button>
+        <button 
+          onClick={() => setMobileActiveView('quiz_sheet')}
+          className={`flex-1 py-3 text-[11px] font-bold uppercase tracking-wider transition-all border-b-2 ${mobileActiveView === 'quiz_sheet' ? 'border-blue-600 text-blue-600 bg-blue-50/30' : 'border-transparent text-slate-400'}`}
+        >
+          Phiếu trả lời
+        </button>
+      </div>
+
       <div className="flex-1 flex overflow-hidden">
-        <div className="flex-1 bg-slate-800 overflow-hidden">
+        <div className={`flex-1 bg-slate-800 overflow-hidden ${mobileActiveView !== 'exam_pdf' ? 'hidden md:block' : 'block'}`}>
           <ExamDisplay type={exam.type} path={exam.filePath} />
         </div>
 
-        <div className="w-[280px] shrink-0 overflow-y-auto bg-[#fffbfb] custom-scrollbar shadow-inner border-l border-slate-200 flex flex-col p-5">
+        <div className={`w-full md:w-[280px] shrink-0 overflow-y-auto bg-[#fffbfb] custom-scrollbar shadow-inner border-l border-slate-200 flex flex-col p-4 md:p-5 ${mobileActiveView !== 'quiz_sheet' ? 'hidden md:flex' : 'flex'}`}>
           <div className="space-y-6">
             <div className="text-center border-b-2 border-red-600 pb-3 mb-4">
               <h2 className="text-[12px] font-black text-red-700 uppercase tracking-widest italic leading-none text-center">PHIẾU TRẢ LỜI</h2>
@@ -304,44 +322,45 @@ const StudentQuiz = () => {
     const feedback = getFeedback(resultsData.total);
     const scoreData = resultsData;
     return (
-      <div className="h-screen flex flex-col bg-slate-50 overflow-hidden animate-in fade-in duration-500">
-        <header className="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center shrink-0 z-20">
-          <div className="flex items-center gap-4 text-left">
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-sm ${feedback.bg} ${feedback.color}`}><Icon name={feedback.icon} size={24} /></div>
+      <div className="min-h-[100dvh] md:h-screen flex flex-col bg-slate-50 overflow-x-hidden md:overflow-hidden animate-in fade-in duration-500 safe-p-bottom">
+        <header className="bg-white border-b border-slate-200 px-4 md:px-6 py-3 md:py-4 flex flex-col sm:flex-row justify-between items-center shrink-0 z-20 gap-4 safe-p-top">
+          <div className="flex items-center gap-3 md:gap-4 text-left w-full sm:w-auto">
+            <div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center shadow-sm ${feedback.bg} ${feedback.color}`}><Icon name={feedback.icon} size={20} /></div>
             <div>
-              <h2 className="text-[18px] font-extrabold uppercase text-slate-800 leading-tight">{studentInfo.name}</h2>
-              <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-1">{studentInfo.class} • {studentInfo.school}</p>
+              <h2 className="text-[16px] md:text-[18px] font-extrabold uppercase text-slate-800 leading-tight truncate max-w-[200px]">{studentInfo.name}</h2>
+              <p className="text-[9px] md:text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-0.5">{studentInfo.class} • {studentInfo.school}</p>
             </div>
           </div>
-          <div className="flex items-center gap-8">
-            <div className="text-center px-8 py-2 bg-blue-600 rounded-xl shadow-md">
-              <p className="text-[10px] font-bold uppercase text-white/70 mb-0.5 tracking-tighter text-center">ĐIỂM TỔNG</p>
-              <p className="text-[48px] font-black text-white leading-none tabular-nums text-center">{resultsData.total}</p>
+          <div className="flex items-center justify-between sm:justify-end gap-4 md:gap-8 w-full sm:w-auto border-t sm:border-t-0 pt-4 sm:pt-0">
+            <div className="text-center px-4 md:px-8 py-1.5 md:py-2 bg-blue-600 rounded-lg md:rounded-xl shadow-md min-w-[100px]">
+              <p className="text-[8px] md:text-[10px] font-bold uppercase text-white/70 mb-0 tracking-tighter text-center">ĐIỂM TỔNG</p>
+              <p className="text-[32px] md:text-[48px] font-black text-white leading-none tabular-nums text-center">{resultsData.total}</p>
             </div>
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2 shrink-0">
               {exam.explanationPath && (
                 <button 
                   onClick={() => setShowExplanation(!showExplanation)} 
-                  className={`px-5 py-2.5 rounded-xl font-bold text-[14px] uppercase transition-all flex items-center justify-center gap-2 border-2 ${showExplanation ? 'bg-orange-50 text-orange-600 border-orange-200' : 'bg-emerald-600 text-white border-emerald-600 shadow-md hover:bg-emerald-700'}`}
+                  className={`px-3 md:px-5 py-2 md:py-2.5 rounded-lg md:rounded-xl font-bold text-[11px] md:text-[14px] uppercase transition-all flex items-center justify-center gap-2 border-2 ${showExplanation ? 'bg-orange-50 text-orange-600 border-orange-200' : 'bg-emerald-600 text-white border-emerald-600 shadow-md hover:bg-emerald-700'}`}
                 >
-                  <Icon name={showExplanation ? "list-checks" : "file-text"} size={14} /> 
-                  {showExplanation ? 'XEM ĐIỂM SỐ' : 'LỜI GIẢI CHI TIẾT'}
+                  <Icon name={showExplanation ? "list-checks" : "file-text"} size={12} /> 
+                  <span className="hidden xs:inline">{showExplanation ? 'XEM ĐIỂM SỐ' : 'LỜI GIẢI'}</span>
+                  <span className="xs:hidden">{showExplanation ? 'ĐIỂM' : 'GIẢI'}</span>
                 </button>
               )}
-              <button onClick={() => navigate('/')} className="bg-slate-900 text-white px-5 py-2.5 rounded-xl font-bold text-[14px] uppercase hover:bg-black transition-all flex items-center justify-center gap-2">
-                <Icon name="home" size={14} /> TRANG CHỦ
+              <button onClick={() => navigate('/')} className="bg-slate-900 text-white px-3 md:px-5 py-2 md:py-2.5 rounded-lg md:rounded-xl font-bold text-[11px] md:text-[14px] uppercase hover:bg-black transition-all flex items-center justify-center gap-2">
+                <Icon name="home" size={12} /> <span className="hidden xs:inline">TRANG CHỦ</span><span className="xs:hidden">VỀ</span>
               </button>
             </div>
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto p-6 custom-scrollbar">
-          <div className="max-w-6xl mx-auto space-y-6 pb-12 text-left">
-            <div className={`p-5 rounded-2xl border border-white shadow-sm flex items-center justify-between gap-6 ${feedback.bg}`}>
-              <p className="text-slate-700 text-[16px] font-semibold">{feedback.text}</p>
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar">
+          <div className="max-w-6xl mx-auto space-y-4 md:space-y-6 pb-12 text-left">
+            <div className={`p-4 md:p-5 rounded-2xl border border-white shadow-sm flex flex-col md:flex-row items-center justify-between gap-4 md:gap-6 ${feedback.bg}`}>
+              <p className="text-slate-700 text-[14px] md:text-[16px] font-semibold text-center md:text-left">{feedback.text}</p>
               <div className="flex gap-2">
                 {[{l:'PHẦN I', v:scoreData.p1c, c:'text-blue-600'}, {l:'PHẦN II', v:scoreData.p2p, c:'text-purple-600'}, {l:'PHẦN III', v:scoreData.p3c, c:'text-orange-600'}].map(item => (
-                  <div key={item.l} className="bg-white px-4 py-2 rounded-xl text-center border border-slate-100 min-w-[80px] shadow-sm"><p className="text-[10px] font-bold text-slate-400 uppercase leading-none mb-1">{item.l}</p><p className={`text-[16px] font-black ${item.c} leading-none`}>{item.v}</p></div>
+                  <div key={item.l} className="bg-white px-2 py-1.5 md:px-4 md:py-2 rounded-lg md:rounded-xl text-center border border-slate-100 min-w-[60px] md:min-w-[80px] shadow-sm"><p className="text-[8px] md:text-[10px] font-bold text-slate-400 uppercase leading-none mb-1">{item.l}</p><p className={`text-[13px] md:text-[16px] font-black ${item.c} leading-none`}>{item.v}</p></div>
                 ))}
               </div>
             </div>
@@ -359,16 +378,16 @@ const StudentQuiz = () => {
               </div>
             ) : (
               <div className="space-y-6">
-                <section className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                  <h3 className="text-[16px] font-bold text-slate-800 uppercase tracking-widest mb-4 flex items-center gap-2 italic border-b pb-2"><Icon name="list-checks" size={18} className="text-blue-500" /> PHẦN I (TRẮC NGHIỆM)</h3>
-                  <div className="grid grid-cols-2 gap-x-12 gap-y-2">
+                <section className="bg-white p-4 md:p-6 rounded-2xl border border-slate-200 shadow-sm">
+                  <h3 className="text-[14px] md:text-[16px] font-bold text-slate-800 uppercase tracking-widest mb-4 flex items-center gap-2 italic border-b pb-2"><Icon name="list-checks" size={18} className="text-blue-500" /> PHẦN I (TRẮC NGHIỆM)</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-2">
                     {Array.from({length: exam.config.p1}, (_, i) => i + 1).map(n => (
-                      <div key={n} className={`flex items-center justify-between px-4 py-2 rounded-xl border transition-all ${scoreData.details.p1[n] ? 'border-emerald-50 bg-emerald-50 text-emerald-700' : 'border-rose-50 bg-rose-50 text-rose-700'}`}>
-                        <div className="flex items-center gap-3">
-                          <span className="text-[14px] font-bold opacity-30">Câu {n}:</span>
-                          <span className="font-extrabold text-[14px] uppercase">{userAnswers.p1[n] || '—'}</span>
+                      <div key={n} className={`flex items-center justify-between px-3 md:px-4 py-1.5 md:py-2 rounded-lg md:rounded-xl border transition-all ${scoreData.details.p1[n] ? 'border-emerald-50 bg-emerald-50 text-emerald-700' : 'border-rose-50 bg-rose-50 text-rose-700'}`}>
+                        <div className="flex items-center gap-2 md:gap-3">
+                          <span className="text-[12px] md:text-[14px] font-bold opacity-30">Câu {n}:</span>
+                          <span className="font-extrabold text-[12px] md:text-[14px] uppercase">{userAnswers.p1[n] || '—'}</span>
                         </div>
-                        {!scoreData.details.p1[n] && <span className="text-[14px] font-bold text-blue-600 uppercase italic">Đ/Á: {exam.correctAnswers.p1[n]}</span>}
+                        {!scoreData.details.p1[n] && <span className="text-[12px] md:text-[14px] font-bold text-blue-600 uppercase italic">Đ/Á: {exam.correctAnswers.p1[n]}</span>}
                       </div>
                     ))}
                   </div>
@@ -399,18 +418,18 @@ const StudentQuiz = () => {
                   </section>
                 )}
                 {exam.config.p3 > 0 && (
-                  <section className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                    <h3 className="text-[16px] font-bold text-slate-800 uppercase tracking-widest mb-4 flex items-center gap-2 italic border-b pb-2"><Icon name="edit-3" size={18} className="text-orange-500" /> PHẦN III (TRẢ LỜI NGẮN)</h3>
-                    <div className="grid grid-cols-3 gap-3">
+                  <section className="bg-white p-4 md:p-6 rounded-2xl border border-slate-200 shadow-sm">
+                    <h3 className="text-[14px] md:text-[16px] font-bold text-slate-800 uppercase tracking-widest mb-4 flex items-center gap-2 italic border-b pb-2"><Icon name="edit-3" size={18} className="text-orange-500" /> PHẦN III (TRẢ LỜI NGẮN)</h3>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 md:gap-3">
                       {Array.from({length: exam.config.p3}, (_, i) => i + 1).map(n => {
                         const isCorrect = scoreData.details.p3[n];
                         return (
-                          <div key={n} className={`p-4 rounded-xl border flex flex-col gap-1 ${isCorrect ? 'bg-emerald-50 border-emerald-100 text-emerald-700' : 'bg-rose-50 border-rose-100 text-rose-700'}`}>
+                          <div key={n} className={`p-3 md:p-4 rounded-lg md:rounded-xl border flex flex-col gap-0.5 md:gap-1 ${isCorrect ? 'bg-emerald-50 border-emerald-100 text-emerald-700' : 'bg-rose-50 border-rose-100 text-rose-700'}`}>
                             <div className="flex justify-between items-start">
-                              <span className="text-[10px] font-bold opacity-40 uppercase italic leading-none">Câu {n}</span>
-                              {!isCorrect && <span className="text-[10px] font-bold text-blue-500 italic leading-none">Đ/A: {exam.correctAnswers.p3[n]}</span>}
+                              <span className="text-[9px] md:text-[10px] font-bold opacity-40 uppercase italic leading-none">Câu {n}</span>
+                              {!isCorrect && <span className="text-[9px] md:text-[10px] font-bold text-blue-500 italic leading-none">Đ/A: {exam.correctAnswers.p3[n]}</span>}
                             </div>
-                            <span className="text-[16px] font-bold font-mono truncate leading-tight">{userAnswers.p3[n] || '—'}</span>
+                            <span className="text-[14px] md:text-[16px] font-bold font-mono truncate leading-tight">{userAnswers.p3[n] || '—'}</span>
                           </div>
                         );
                       })}

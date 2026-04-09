@@ -17,7 +17,24 @@
 
 body {
   margin: 0;
-  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  /* Fix for mobile browser toolbars jumping */
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* Safe area support for notched phones */
+.safe-p-top {
+  padding-top: env(safe-area-inset-top);
+}
+.safe-p-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.safe-m-top {
+  margin-top: env(safe-area-inset-top);
+}
+.safe-m-bottom {
+  margin-top: env(safe-area-inset-bottom);
 }
 
 .custom-scrollbar::-webkit-scrollbar {
