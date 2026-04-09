@@ -68,6 +68,7 @@ const StudentQuiz = () => {
   const [tabSwitchCount, setTabSwitchCount] = useState(0);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showExplanation, setShowExplanation] = useState(false);
 
   useEffect(() => {
     const fetchExam = async () => {
@@ -318,7 +319,18 @@ const StudentQuiz = () => {
               <p className="text-[48px] font-black text-white leading-none tabular-nums text-center">{resultsData.total}</p>
             </div>
             <div className="flex flex-col gap-2">
-              <button onClick={() => navigate('/')} className="bg-slate-900 text-white px-5 py-2.5 rounded-xl font-bold text-[14px] uppercase hover:bg-black transition-all flex items-center justify-center gap-2"><Icon name="home" size={14} /> TRANG CHỦ</button>
+              {exam.explanationPath && (
+                <button 
+                  onClick={() => setShowExplanation(!showExplanation)} 
+                  className={`px-5 py-2.5 rounded-xl font-bold text-[14px] uppercase transition-all flex items-center justify-center gap-2 border-2 ${showExplanation ? 'bg-orange-50 text-orange-600 border-orange-200' : 'bg-emerald-600 text-white border-emerald-600 shadow-md hover:bg-emerald-700'}`}
+                >
+                  <Icon name={showExplanation ? "list-checks" : "file-text"} size={14} /> 
+                  {showExplanation ? 'XEM ĐIỂM SỐ' : 'LỜI GIẢI CHI TIẾT'}
+                </button>
+              )}
+              <button onClick={() => navigate('/')} className="bg-slate-900 text-white px-5 py-2.5 rounded-xl font-bold text-[14px] uppercase hover:bg-black transition-all flex items-center justify-center gap-2">
+                <Icon name="home" size={14} /> TRANG CHỦ
+              </button>
             </div>
           </div>
         </header>
@@ -333,66 +345,80 @@ const StudentQuiz = () => {
                 ))}
               </div>
             </div>
-            <div className="space-y-6">
-              <section className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                <h3 className="text-[16px] font-bold text-slate-800 uppercase tracking-widest mb-4 flex items-center gap-2 italic border-b pb-2"><Icon name="list-checks" size={18} className="text-blue-500" /> PHẦN I (TRẮC NGHIỆM)</h3>
-                <div className="grid grid-cols-2 gap-x-12 gap-y-2">
-                  {Array.from({length: exam.config.p1}, (_, i) => i + 1).map(n => (
-                    <div key={n} className={`flex items-center justify-between px-4 py-2 rounded-xl border transition-all ${scoreData.details.p1[n] ? 'border-emerald-50 bg-emerald-50 text-emerald-700' : 'border-rose-50 bg-rose-50 text-rose-700'}`}>
-                      <div className="flex items-center gap-3">
-                        <span className="text-[14px] font-bold opacity-30">Câu {n}:</span>
-                        <span className="font-extrabold text-[14px] uppercase">{userAnswers.p1[n] || '—'}</span>
-                      </div>
-                      {!scoreData.details.p1[n] && <span className="text-[14px] font-bold text-blue-600 uppercase italic">Đ/Á: {exam.correctAnswers.p1[n]}</span>}
-                    </div>
-                  ))}
+            {showExplanation ? (
+              <div className="bg-slate-800 rounded-3xl overflow-hidden shadow-2xl border-4 border-slate-700 animate-in zoom-in duration-300">
+                <div className="bg-slate-700 p-4 flex justify-between items-center">
+                  <span className="text-white font-black uppercase italic tracking-widest text-xs flex items-center gap-2">
+                    <Icon name="file-text" size={16} className="text-orange-400" /> FILE LỜI GIẢI CHI TIẾT
+                  </span>
+                  <button onClick={() => setShowExplanation(false)} className="text-slate-400 hover:text-white transition-all"><Icon name="x" size={20} /></button>
                 </div>
-              </section>
-              {exam.config.p2 > 0 && (
+                <div className="h-[75vh]">
+                   <ExamDisplay type="pdf" path={exam.explanationPath} />
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-6">
                 <section className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                  <h3 className="text-[16px] font-bold text-slate-800 uppercase tracking-widest mb-4 flex items-center gap-2 italic border-b pb-2"><Icon name="check-square" size={18} className="text-purple-500" /> PHẦN II (ĐÚNG / SAI)</h3>
-                  <div className="grid grid-cols-2 gap-6">
-                    {Array.from({length: exam.config.p2}, (_, i) => i + 1).map(n => (
-                      <div key={n} className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                        <p className="text-[14px] font-bold text-slate-400 mb-2 uppercase italic leading-none">Câu hỏi {n}</p>
-                        <div className="space-y-1.5">
-                          {['a','b','c','d'].map(s => {
-                            const uVal = userAnswers.p2?.[n]?.[s];
-                            const cVal = exam.correctAnswers.p2?.[n]?.[s];
-                            const isCorrect = (uVal === cVal);
-                            return (
-                              <div key={s} className={`flex items-center justify-between p-2 rounded-lg border text-[14px] transition-all ${isCorrect ? 'bg-emerald-50 border-emerald-100 text-emerald-700' : 'bg-rose-50 border-rose-100 text-rose-700'}`}>
-                                <span className="font-bold uppercase italic">{s}) {uVal === true ? 'ĐÚNG' : (uVal === false ? 'SAI' : '—')}</span>
-                                {!isCorrect && <span className="font-bold text-blue-600 uppercase">Đ/A: {cVal ? 'Đ' : 'S'}</span>}
-                              </div>
-                            );
-                          })}
+                  <h3 className="text-[16px] font-bold text-slate-800 uppercase tracking-widest mb-4 flex items-center gap-2 italic border-b pb-2"><Icon name="list-checks" size={18} className="text-blue-500" /> PHẦN I (TRẮC NGHIỆM)</h3>
+                  <div className="grid grid-cols-2 gap-x-12 gap-y-2">
+                    {Array.from({length: exam.config.p1}, (_, i) => i + 1).map(n => (
+                      <div key={n} className={`flex items-center justify-between px-4 py-2 rounded-xl border transition-all ${scoreData.details.p1[n] ? 'border-emerald-50 bg-emerald-50 text-emerald-700' : 'border-rose-50 bg-rose-50 text-rose-700'}`}>
+                        <div className="flex items-center gap-3">
+                          <span className="text-[14px] font-bold opacity-30">Câu {n}:</span>
+                          <span className="font-extrabold text-[14px] uppercase">{userAnswers.p1[n] || '—'}</span>
                         </div>
+                        {!scoreData.details.p1[n] && <span className="text-[14px] font-bold text-blue-600 uppercase italic">Đ/Á: {exam.correctAnswers.p1[n]}</span>}
                       </div>
                     ))}
                   </div>
                 </section>
-              )}
-              {exam.config.p3 > 0 && (
-                <section className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                  <h3 className="text-[16px] font-bold text-slate-800 uppercase tracking-widest mb-4 flex items-center gap-2 italic border-b pb-2"><Icon name="edit-3" size={18} className="text-orange-500" /> PHẦN III (TRẢ LỜI NGẮN)</h3>
-                  <div className="grid grid-cols-3 gap-3">
-                    {Array.from({length: exam.config.p3}, (_, i) => i + 1).map(n => {
-                      const isCorrect = scoreData.details.p3[n];
-                      return (
-                        <div key={n} className={`p-4 rounded-xl border flex flex-col gap-1 ${isCorrect ? 'bg-emerald-50 border-emerald-100 text-emerald-700' : 'bg-rose-50 border-rose-100 text-rose-700'}`}>
-                          <div className="flex justify-between items-start">
-                            <span className="text-[10px] font-bold opacity-40 uppercase italic leading-none">Câu {n}</span>
-                            {!isCorrect && <span className="text-[10px] font-bold text-blue-500 italic leading-none">Đ/A: {exam.correctAnswers.p3[n]}</span>}
+                {exam.config.p2 > 0 && (
+                  <section className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                    <h3 className="text-[16px] font-bold text-slate-800 uppercase tracking-widest mb-4 flex items-center gap-2 italic border-b pb-2"><Icon name="check-square" size={18} className="text-purple-500" /> PHẦN II (ĐÚNG / SAI)</h3>
+                    <div className="grid grid-cols-2 gap-6">
+                      {Array.from({length: exam.config.p2}, (_, i) => i + 1).map(n => (
+                        <div key={n} className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                          <p className="text-[14px] font-bold text-slate-400 mb-2 uppercase italic leading-none">Câu hỏi {n}</p>
+                          <div className="space-y-1.5">
+                            {['a','b','c','d'].map(s => {
+                              const uVal = userAnswers.p2?.[n]?.[s];
+                              const cVal = exam.correctAnswers.p2?.[n]?.[s];
+                              const isCorrect = (uVal === cVal);
+                              return (
+                                <div key={s} className={`flex items-center justify-between p-2 rounded-lg border text-[14px] transition-all ${isCorrect ? 'bg-emerald-50 border-emerald-100 text-emerald-700' : 'bg-rose-50 border-rose-100 text-rose-700'}`}>
+                                  <span className="font-bold uppercase italic">{s}) {uVal === true ? 'ĐÚNG' : (uVal === false ? 'SAI' : '—')}</span>
+                                  {!isCorrect && <span className="font-bold text-blue-600 uppercase">Đ/A: {cVal ? 'Đ' : 'S'}</span>}
+                                </div>
+                              );
+                            })}
                           </div>
-                          <span className="text-[16px] font-bold font-mono truncate leading-tight">{userAnswers.p3[n] || '—'}</span>
                         </div>
-                      );
-                    })}
-                  </div>
-                </section>
-              )}
-            </div>
+                      ))}
+                    </div>
+                  </section>
+                )}
+                {exam.config.p3 > 0 && (
+                  <section className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                    <h3 className="text-[16px] font-bold text-slate-800 uppercase tracking-widest mb-4 flex items-center gap-2 italic border-b pb-2"><Icon name="edit-3" size={18} className="text-orange-500" /> PHẦN III (TRẢ LỜI NGẮN)</h3>
+                    <div className="grid grid-cols-3 gap-3">
+                      {Array.from({length: exam.config.p3}, (_, i) => i + 1).map(n => {
+                        const isCorrect = scoreData.details.p3[n];
+                        return (
+                          <div key={n} className={`p-4 rounded-xl border flex flex-col gap-1 ${isCorrect ? 'bg-emerald-50 border-emerald-100 text-emerald-700' : 'bg-rose-50 border-rose-100 text-rose-700'}`}>
+                            <div className="flex justify-between items-start">
+                              <span className="text-[10px] font-bold opacity-40 uppercase italic leading-none">Câu {n}</span>
+                              {!isCorrect && <span className="text-[10px] font-bold text-blue-500 italic leading-none">Đ/A: {exam.correctAnswers.p3[n]}</span>}
+                            </div>
+                            <span className="text-[16px] font-bold font-mono truncate leading-tight">{userAnswers.p3[n] || '—'}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </section>
+                )}
+              </div>
+            )}
           </div>
         </main>
       </div>

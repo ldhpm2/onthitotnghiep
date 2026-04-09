@@ -12,21 +12,40 @@ const CATEGORIES = {
 const EditExamModal = ({ exam, onSave, onClose }) => {
   const [title, setTitle] = useState(exam.title);
   const [category, setCategory] = useState(exam.category || 'khac');
-  // const [file, setFile] = useState(null); // Skipping file for edit to keep it simple, or we can keep it
+  const [explanationFile, setExplanationFile] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file && file.type === 'application/pdf') {
+      setExplanationFile(file);
+    } else if (file) {
+      alert("Vui lòng chọn file PDF!");
+      e.target.value = "";
+    }
+  };
 
   const handleSave = async () => {
     if (!title.trim()) return alert("Tên đề thi không được để trống!");
     setIsSaving(true);
     
-    // Using simple JSON payload instead of FormData to match backend's expected format
-    const payload = {
-      id: exam.id,
-      title: title.trim(),
-      category: category
-    };
-
     try {
+      const payload = {
+        id: exam.id,
+        title: title.trim(),
+        category: category
+      };
+
+      if (explanationFile) {
+        const reader = new FileReader();
+        const base64Promise = new Promise((resolve) => {
+          reader.onload = () => resolve(reader.result.split(',')[1]);
+          reader.readAsDataURL(explanationFile);
+        });
+        payload.explanationData = await base64Promise;
+        payload.explanationFileName = explanationFile.name;
+      }
+
       const r = await axios.post('/api/exams?action=edit', payload);
       if (r.data.success) { 
         onSave(); 
@@ -60,6 +79,22 @@ const EditExamModal = ({ exam, onSave, onClose }) => {
           <div>
             <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Tên đề thi</label>
             <input type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 font-bold text-slate-700 outline-none focus:border-blue-500 transition-all shadow-inner" />
+          </div>
+          <div>
+            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">File Lời giải PDF (Tùy chọn)</label>
+            <div className="relative group">
+              <input 
+                type="file" 
+                accept=".pdf" 
+                onChange={handleFileChange} 
+                className="w-full bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-4 font-bold text-slate-500 outline-none focus:border-blue-500 transition-all hover:bg-slate-100 cursor-pointer text-xs" 
+              />
+              {exam.explanationPath && !explanationFile && (
+                <p className="mt-2 text-[10px] text-emerald-600 font-bold flex items-center gap-1">
+                  <Icon name="check-circle" size={12} /> Đã có file lời giải trên hệ thống
+                </p>
+              )}
+            </div>
           </div>
         </div>
         <div className="p-6 border-t bg-slate-50 flex justify-end gap-3">

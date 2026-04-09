@@ -69,6 +69,7 @@ export default async function handler(req, res) {
           createdAt: new Date().toLocaleString('vi-VN'),
           visible: true,
           correctAnswers: { p1: {}, p2: {}, p3: {} },
+          explanationPath: "",
           duration: 90
         };
         
@@ -83,11 +84,35 @@ export default async function handler(req, res) {
 
     // 3. EDIT EXAM METADATA
     if (action === 'edit' && req.method === 'POST') {
-      const { id, title, category } = req.body;
+      const { id, title, category, explanationData, explanationFileName } = req.body;
       let exams = await kv.get('exams_data') || [];
+      
+      let finalExplanationPath = null;
+      if (explanationData && explanationFileName) {
+        try {
+          const buffer = Buffer.from(explanationData, 'base64');
+          const blobToken = process.env.BLOB_READ_WRITE_TOKEN;
+          const blob = await put(`explanations/${Date.now()}_${explanationFileName}`, buffer, {
+            access: 'public',
+            token: blobToken
+          });
+          finalExplanationPath = blob.url;
+        } catch (e) {
+          console.error("Explanation Blob Error:", e);
+        }
+      }
+
       exams = exams.map(e => {
         if (String(e.id) === String(id)) {
-          return { ...e, title: title || e.title, category: category || e.category };
+          const updated = { ...e, title: title || e.title, category: category || e.category };
+          if (finalExplanationPath) {
+            // Delete old explanation if exists
+            if (e.explanationPath && e.explanationPath.includes('public.blob.vercel-storage.com')) {
+              try { del(e.explanationPath); } catch (err) {}
+            }
+            updated.explanationPath = finalExplanationPath;
+          }
+          return updated;
         }
         return e;
       });
@@ -126,8 +151,13 @@ export default async function handler(req, res) {
     if (action === 'delete' && id) {
       let exams = await kv.get('exams_data') || [];
       const examToDelete = exams.find(e => String(e.id) === String(id));
-      if (examToDelete && examToDelete.filePath && examToDelete.filePath.includes('public.blob.vercel-storage.com')) {
-        try { await del(examToDelete.filePath); } catch (e) { console.error("Blob delete error:", e); }
+      if (examToDelete) {
+        if (examToDelete.filePath && examToDelete.filePath.includes('public.blob.vercel-storage.com')) {
+          try { await del(examToDelete.filePath); } catch (e) { console.error("Blob delete error:", e); }
+        }
+        if (examToDelete.explanationPath && examToDelete.explanationPath.includes('public.blob.vercel-storage.com')) {
+          try { await del(examToDelete.explanationPath); } catch (e) { console.error("Explanation blob delete error:", e); }
+        }
       }
       exams = exams.filter(e => String(e.id) !== String(id));
       await kv.set('exams_data', exams);
@@ -145,6 +175,9 @@ export default async function handler(req, res) {
       for (const item of toDelete) {
         if (item.filePath && item.filePath.includes('public.blob.vercel-storage.com')) {
           try { await del(item.filePath); } catch (e) {}
+        }
+        if (item.explanationPath && item.explanationPath.includes('public.blob.vercel-storage.com')) {
+          try { await del(item.explanationPath); } catch (e) {}
         }
       }
       
