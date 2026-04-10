@@ -34,14 +34,17 @@ const calculateAttemptScore = (userAns, correctAns, config) => {
   
   let p3c = 0; 
   for (let i = 1; i <= conf.p3; i++) {
-    const uA = (uAns.p3 && uAns.p3[i] ? uAns.p3[i] : '').toString().trim().toLowerCase();
-    const cA = (cAns.p3 && cAns.p3[i] ? cAns.p3[i] : '').toString().trim().toLowerCase();
-    const isC = uA !== '' && cA !== '' && uA === cA; 
+    const uA = (uAns.p3 && uAns.p3[i] ? uAns.p3[i] : '').toString().trim().replace(',', '.').toLowerCase();
+    const cA = (cAns.p3 && cAns.p3[i] ? cAns.p3[i] : '').toString().trim().replace(',', '.').toLowerCase();
+    const isNumMatch = uA !== '' && cA !== '' && !isNaN(Number(uA)) && !isNaN(Number(cA)) && Number(uA) === Number(cA);
+    const isExactMatch = uA !== '' && cA !== '' && uA === cA;
+    const isC = isNumMatch || isExactMatch; 
     if (isC) p3c++; 
     details.p3[i] = isC;
   }
   
-  return { total: ((p1c * 0.25) + p2p + (p3c * 0.5)).toFixed(2), p1c, p2p: p2p.toFixed(2), p3c, details };
+  const p3Multiplier = conf.p1 === 18 ? 0.25 : 0.5;
+  return { total: ((p1c * 0.25) + p2p + (p3c * p3Multiplier)).toFixed(2), p1c, p2p: p2p.toFixed(2), p3c, details };
 };
 
 const DetailView = ({ attempt, exam, onBack }) => {

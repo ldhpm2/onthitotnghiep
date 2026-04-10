@@ -40,12 +40,15 @@ const calculateAttemptScore = (userAns, correctAns, config) => {
   for (let i = 1; i <= conf.p3; i++) {
     const uA = (uAns.p3 && uAns.p3[i] ? uAns.p3[i] : '').toString().trim().replace(',', '.').toLowerCase();
     const cA = (cAns.p3 && cAns.p3[i] ? cAns.p3[i] : '').toString().trim().replace(',', '.').toLowerCase();
-    const isCorrect = uA !== '' && cA !== '' && parseFloat(uA) === parseFloat(cA);
+    const isNumMatch = uA !== '' && cA !== '' && !isNaN(Number(uA)) && !isNaN(Number(cA)) && Number(uA) === Number(cA);
+    const isExactMatch = uA !== '' && cA !== '' && uA === cA;
+    const isCorrect = isNumMatch || isExactMatch;
     if (isCorrect) p3c++;
     details.p3[i] = isCorrect;
   }
   
-  const total = ((p1c * 0.25) + p2p + (p3c * 0.5)).toFixed(2);
+  const p3Multiplier = conf.p1 === 18 ? 0.25 : 0.5;
+  const total = ((p1c * 0.25) + p2p + (p3c * p3Multiplier)).toFixed(2);
   return { total, p1c, p2p: p2p.toFixed(2), p3c, details };
 };
 
